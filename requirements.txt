@@ -12,6 +12,8 @@
 # pip install -r requirements.txt
 # Remember to also add them in setup.cfg but unpinned.
 # Example:
-# numpy==1.13.3
-# scipy==1.0
-#
+numpy==1.19.0
+pandas==1.0.5
+python-dateutil==2.8.1
+pytz==2020.1
+six==1.15.0
