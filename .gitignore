@@ -51,3 +51,6 @@ MANIFEST
 
 # virtual environment
 venv
+
+# data
+data 
