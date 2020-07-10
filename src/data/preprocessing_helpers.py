@@ -23,6 +23,9 @@ class DataProcess():
     def load_data(self):
         return
 
+    def this_is_a_test(self):
+        return
+
 # def fib(n):
 #     """Fibonacci example function
 #
