@@ -81,7 +81,7 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = u'churn_model_project'
+project = u'churn_model'
 copyright = u'2020, Wei (Serena) Zou'
 
 # The version info for the project you're documenting, acts as replacement for
