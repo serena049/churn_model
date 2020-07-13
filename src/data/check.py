@@ -7,6 +7,7 @@ import pathlib as pl
 import pandas as pd
 import time
 import numpy as np
+import yaml
 
 __author__ = "Wei (Serena) Zou"
 __copyright__ = "Wei (Serena) Zou"
@@ -56,7 +57,7 @@ class Check:
 
     @staticmethod
     def load(df: pd.DataFrame, file_col_name: str = "File_Name", time_col_name: str = "Created",
-             parent_path_col_name: str = "Parent", contains_str: str = "datasets"):
+             parent_path_col_name: str = "Parent", contains_str: str = "datasets", name_in_reference: str = 'churn'):
 
         """
         Find the most recent data file and load the data
@@ -66,6 +67,7 @@ class Check:
             time_col_name: column name of created time in df
             parent_path_col_name: column name of parent path in df
             contains_str: data input file should have this str in the file name
+            name_in_reference: the key in type.yml for the corresponding data set
 
         Returns: pandas df of input data
         """
@@ -76,11 +78,15 @@ class Check:
             # select the most recent data
             file_path = files.sort_values(time_col_name, ascending=False)[parent_path_col_name][0].joinpath(
                         files.sort_values(time_col_name, ascending=False)[file_col_name][0])
-            # load data
-            data = pd.read_csv(file_path)
 
-            # standardize all column names to lowercase
-            data.columns = map(str.lower, data.columns)
+            # import type.yml to specify column types
+            yml_file = pl.Path(__file__).resolve().parents[0].joinpath('type.yml')
+            with open(yml_file) as f:
+                # use safe_load instead load
+                type_reference = yaml.safe_load(f)[name_in_reference]
+
+            # load data
+            data = pd.read_csv(file_path, header=0, names=type_reference.keys(), dtype=type_reference)
 
             return data
         else:
@@ -102,9 +108,6 @@ class Check:
         else:
             raise ValueError("data size wrong!")
 
-    def check_type(self):
-        return
-
 
 if __name__ == "__main__":
     input_data_path = pl.Path(__file__).resolve().parents[2].joinpath('data/input/') # the parent directory of current script
@@ -113,5 +116,7 @@ if __name__ == "__main__":
     check_data.check_path(df_all_files)
     df_raw = check_data.load(df_all_files)
     check_data.check_size(df_raw)
+    print(df_raw.head())
+
 
 
