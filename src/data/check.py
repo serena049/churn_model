@@ -15,6 +15,7 @@ __license__ = "mit"
 
 # _logger = logging.getLogger(__name__)
 
+
 class Check:
     """
     Class to check path, data size and data type
@@ -56,6 +57,46 @@ class Check:
             raise ValueError("empty folder!")
 
     @staticmethod
+    def convert(df:pd.DataFrame, file_col_name: str = "File_Name", time_col_name: str = "Created",
+             parent_path_col_name: str = "Parent", contains_str: str = "datasets"):
+
+        '''
+        This function is used to load the raw csv file, trim whitespaces in numerical columns, and output the file
+        to the original folder
+        Args:
+            df: pandas df with all the files in the directory
+            file_col_name: column name of file names in df
+            time_col_name: column name of created time in df
+            parent_path_col_name: column name of parent path in df
+            contains_str: data input file should have this str in the file name
+
+        Returns:
+
+        '''
+
+        # select all the files containing name "datasets"
+        files = df[df[file_col_name].str.contains(contains_str, na=False)]
+        if len(files.index) >= 1:
+            # select the most recent data
+            file_path = files.sort_values(time_col_name, ascending=False)[parent_path_col_name][0].joinpath(
+                files.sort_values(time_col_name, ascending=False)[file_col_name][0])
+
+        # read in raw data
+        df = pd.read_csv(file_path)
+
+        # import type.yml to specify column types
+        yml_file = pl.Path(__file__).resolve().parents[0].joinpath('type.yml')
+        with open(yml_file) as f:
+            # use safe_load instead load
+            type_dic = yaml.safe_load(f)
+        col_with_ws = type_dic['Trim_ws']
+
+        df[col_with_ws] = df[col_with_ws].replace(r'^\s*$', np.nan, regex=True)
+        df.to_csv(file_path)
+
+        return df
+
+    @staticmethod
     def load(df: pd.DataFrame, file_col_name: str = "File_Name", time_col_name: str = "Created",
              parent_path_col_name: str = "Parent", contains_str: str = "datasets", name_in_reference: str = 'churn'):
 
@@ -83,10 +124,17 @@ class Check:
             yml_file = pl.Path(__file__).resolve().parents[0].joinpath('type.yml')
             with open(yml_file) as f:
                 # use safe_load instead load
-                type_reference = yaml.safe_load(f)[name_in_reference]
+                type_dic = yaml.safe_load(f)
+
+            type_reference = type_dic[name_in_reference]
 
             # load data
-            data = pd.read_csv(file_path, header=0, names=type_reference.keys(), dtype=type_reference)
+            data = pd.read_csv(file_path, header=0, dtype=type_reference)
+
+            print(data.dtypes)
+
+            # lower case for column names
+            data.columns = map(str.lower, data.columns)
 
             return data
         else:
@@ -108,15 +156,60 @@ class Check:
         else:
             raise ValueError("data size wrong!")
 
+class Transformation:
+    """
+    Class to conduct data transformation for model inputs
+    """
+    def __init__(self, df):
+        self.df = df
+
+
+    def remove_missing_value(self, col_na_thres: str = 0.2):
+        # remove columns with > col_na_thres na
+        df_no_na_col = self.df.dropna(thresh=col_na_thres * len(self.df), axis=1)
+        # remove rows with any na
+        df_no_na_row = df_no_na_col.dropna(how='any')
+        return df_no_na_row
+
+    @staticmethod
+    def data_types(df, name_in_reference: str = 'churn'):
+        # import type.yml to specify column types
+        yml_file = pl.Path(__file__).resolve().parents[0].joinpath('type.yml')
+        with open(yml_file) as f:
+            # use safe_load instead load
+            type_reference = yaml.safe_load(f)[name_in_reference]
+
+        obj_cols = list(mydict.keys())[list(mydict.values()).index(16)]
+        num
+
+        df = df.astype(type_reference)
+        return df
+
+        #
+    # def label_encode(self):
+    #     # ordinal to numeric
+    #     ordinal_cols = [col for col inlist_cols if col in df.columns]
+    #     df_ordinal = df[ordinal_cols].copy()
+
+
+        return
 
 if __name__ == "__main__":
+    # load
     input_data_path = pl.Path(__file__).resolve().parents[2].joinpath('data/input/') # the parent directory of current script
     check_data = Check(input_data_path)
     df_all_files = check_data.list_all_files()
     check_data.check_path(df_all_files)
-    df_raw = check_data.load(df_all_files)
-    check_data.check_size(df_raw)
-    print(df_raw.head())
+    df_raw = check_data.convert(df_all_files)
+    df_dtype_check = check_data.load(df_all_files)
+    print(df_dtype_check.head())
 
+    #
+    # # transformation
+    # df_raw = Transformation(df_raw)
+    # df_rv_na = df_raw.remove_missing_value()
+    # df_convert_type = df_raw.data_types(df_rv_na)
+    # print (df_convert_type.dtypes)
+    #
 
 

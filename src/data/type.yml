@@ -3,26 +3,27 @@
 ########################################################################################################################
 
 churn:
-  customerid: object
+  customerID: object
   gender: object
-  seniorcitizen: object
-  partner: object
-  dependents: object
-  tenure: object
-  phoneservice: object
-  multiplelines: object
-  internetservice: object
-  onlinesecurity: object
-  onlinebackup: object
-  deviceprotection: object
-  techsupport: object
-  streamingtv: object
-  streamingmovies: object
-  contract: object
-  paperlessbilling: object
-  paymentmethod: object
-  monthlycharges: object
-  totalcharges: object
-  churn: object
+  SeniorCitizen: object
+  Partner: object
+  Dependents: object
+  tenure: int
+  PhoneService: object
+  MultipleLines: object
+  InternetService: object
+  OnlineSecurity: object
+  OnlineBackup: object
+  DeviceProtection: object
+  TechSupport: object
+  StreamingTV: object
+  StreamingMovies: object
+  Contract: object
+  PaperlessBilling: object
+  PaymentMethod: object
+  MonthlyCharges: float
+  TotalCharges: float
+  Churn: object
 
+Trim_ws: ['tenure', 'TotalCharges']
 
