@@ -20,7 +20,7 @@ class Check:
     """
     Class to check path, data size and data type
     """
-
+    #
     def __init__(self, data_path):
         self.data_path = data_path
 
@@ -84,9 +84,6 @@ class Check:
         # read in raw data
         df = pd.read_csv(file_path)
 
-        # drop cols without headers
-        df = df[df.columns.dropna()]
-
         # import type.yml to specify column types
         yml_file = pl.Path(__file__).resolve().parents[0].joinpath('type.yml')
         with open(yml_file) as f:
@@ -94,12 +91,10 @@ class Check:
             type_dic = yaml.safe_load(f)
         col_with_ws = type_dic['Trim_ws']
 
-        # convert white space to nan
         df[col_with_ws] = df[col_with_ws].replace(r'^\s*$', np.nan, regex=True)
+        df.to_csv(file_path)
 
-        df.to_csv(file_path, index=False)
-
-        return
+        return df
 
     @staticmethod
     def load(df: pd.DataFrame, file_col_name: str = "File_Name", time_col_name: str = "Created",
@@ -136,6 +131,8 @@ class Check:
             # load data
             data = pd.read_csv(file_path, header=0, dtype=type_reference)
 
+            print(data.dtypes)
+
             # lower case for column names
             data.columns = map(str.lower, data.columns)
 
@@ -159,7 +156,6 @@ class Check:
         else:
             raise ValueError("data size wrong!")
 
-
 class Transformation:
     """
     Class to conduct data transformation for model inputs
@@ -167,31 +163,36 @@ class Transformation:
     def __init__(self, df):
         self.df = df
 
-    def remove_missing_value(self, col_na_thres: str = 0.2) -> pd.DataFrame:
+
+    def remove_missing_value(self, col_na_thres: str = 0.2):
         # remove columns with > col_na_thres na
         df_no_na_col = self.df.dropna(thresh=col_na_thres * len(self.df), axis=1)
         # remove rows with any na
         df_no_na_row = df_no_na_col.dropna(how='any')
-
         return df_no_na_row
 
     @staticmethod
-    def encode(df, target_col: str = 'churn'):
-        df.set_index('customerid', inplace=True)
-        df_cat = df.select_dtypes(include='object')
-        df_num = df[list(set(df.columns) - set(df_cat.columns))]
+    def data_types(df, name_in_reference: str = 'churn'):
+        # import type.yml to specify column types
+        yml_file = pl.Path(__file__).resolve().parents[0].joinpath('type.yml')
+        with open(yml_file) as f:
+            # use safe_load instead load
+            type_reference = yaml.safe_load(f)[name_in_reference]
 
-        # one-hot encoding
-        df_new_cat = pd.get_dummies(df_cat.drop(target_col, 1))
+        obj_cols = list(mydict.keys())[list(mydict.values()).index(16)]
+        num
 
-        # concat numerical cols and new cat cols
-        df_encode = pd.concat([df_num, df_new_cat], axis=1)
+        df = df.astype(type_reference)
+        return df
 
-        # target variable
-        target = df[target_col]
+        #
+    # def label_encode(self):
+    #     # ordinal to numeric
+    #     ordinal_cols = [col for col inlist_cols if col in df.columns]
+    #     df_ordinal = df[ordinal_cols].copy()
 
-        return target, df_encode
 
+        return
 
 if __name__ == "__main__":
     # load
@@ -200,16 +201,15 @@ if __name__ == "__main__":
     df_all_files = check_data.list_all_files()
     check_data.check_path(df_all_files)
     df_raw = check_data.convert(df_all_files)
-    df_raw = check_data.load(df_all_files)
+    df_dtype_check = check_data.load(df_all_files)
+    print(df_dtype_check.head())
 
-    # transformation
-    df_transformation = Transformation(df_raw)
-    df_rv_na = df_transformation.remove_missing_value()
-
-    target, df_encode = df_transformation.encode(df_rv_na)
-    print(df_encode)
-    print(target)
-
-
+    #
+    # # transformation
+    # df_raw = Transformation(df_raw)
+    # df_rv_na = df_raw.remove_missing_value()
+    # df_convert_type = df_raw.data_types(df_rv_na)
+    # print (df_convert_type.dtypes)
+    #
 
 
