@@ -5,7 +5,7 @@
 churn:
   customerID: object
   gender: object
-  SeniorCitizen: int
+  SeniorCitizen: object
   Partner: object
   Dependents: object
   tenure: int

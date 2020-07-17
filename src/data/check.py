@@ -8,6 +8,7 @@ import pandas as pd
 import time
 import numpy as np
 import yaml
+from sklearn.preprocessing import StandardScaler
 
 __author__ = "Wei (Serena) Zou"
 __copyright__ = "Wei (Serena) Zou"
@@ -176,16 +177,22 @@ class Transformation:
         return df_no_na_row
 
     @staticmethod
-    def encode(df, target_col: str = 'churn'):
+    def preprocess(df, target_col: str = 'churn'):
         df.set_index('customerid', inplace=True)
         df_cat = df.select_dtypes(include='object')
         df_num = df[list(set(df.columns) - set(df_cat.columns))]
 
-        # one-hot encoding
+        # one-hot encoding for categorical
         df_new_cat = pd.get_dummies(df_cat.drop(target_col, 1))
 
+        # standardize numerical
+        std = StandardScaler()
+        scaled = std.fit_transform(df_num)
+        scaled = pd.DataFrame(scaled, columns=df_num.columns)
+        scaled.set_index(df.index, inplace=True)
+
         # concat numerical cols and new cat cols
-        df_encode = pd.concat([df_num, df_new_cat], axis=1)
+        df_encode = pd.concat([scaled, df_new_cat], axis=1)
 
         # target variable
         target = df[target_col]
@@ -206,7 +213,7 @@ if __name__ == "__main__":
     df_transformation = Transformation(df_raw)
     df_rv_na = df_transformation.remove_missing_value()
 
-    target, df_encode = df_transformation.encode(df_rv_na)
+    target, df_encode = df_transformation.preprocess(df_rv_na)
     print(df_encode)
     print(target)
 
