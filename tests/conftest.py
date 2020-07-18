@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-    Dummy conftest.py for churn_model_project.
+    Dummy conftest.py for churn_model.
 
     If you don't know what this is for, just leave it empty.
     Read more about conftest.py under:

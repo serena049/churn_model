@@ -1,8 +1,8 @@
-===================
-churn_model_project
-===================
+===========
+churn_model
+===========
 
-This is the documentation of **churn_model_project**.
+This is the documentation of **churn_model**.
 
 .. note::
 

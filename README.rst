@@ -1,6 +1,6 @@
-===================
-churn_model_project
-===================
+===========
+churn_model
+===========
 
 
 Add a short description here!

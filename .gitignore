@@ -49,6 +49,8 @@ MANIFEST
 # Per-project virtualenvs
 .venv*/
 
-
-# virtual env
+# virtual environment
 venv
+
+# data
+data vd

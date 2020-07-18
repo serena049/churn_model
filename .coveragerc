@@ -1,7 +1,7 @@
 # .coveragerc to control coverage.py
 [run]
 branch = True
-source = churn_model_project
+source = churn_model
 # omit = bad_file.py
 
 [paths]
