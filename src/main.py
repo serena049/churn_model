@@ -1,6 +1,7 @@
 import preprocess.etl as etl
 import model.fitmodel as fitmodel
 import pathlib as pl
+from sklearn.linear_model import LogisticRegression
 
 if __name__ == "__main__":
     # step 1: ETL
@@ -21,7 +22,17 @@ if __name__ == "__main__":
     # Step 2: Fit models
     # train test split
     df_split = fitmodel.AsNumpy(df_encode)
-    train_X, train_Y, test_X, test_Y = df_split.train_test_split()
+    train_x, train_y, test_x, test_y, cols = df_split.train_test_split()
+
+    # run a logistic regression
+    logit = LogisticRegression(C=1.0, class_weight=None, dual=False, fit_intercept=True,
+                               intercept_scaling=1, max_iter=100, multi_class='ovr', n_jobs=1,
+                               penalty='l2', random_state=None, solver='liblinear', tol=0.0001,
+                               verbose=0, warm_start=False)
+    fi_imp_sumry, conf_matrix, model_roc_auc, fpr, tpr, thresholds \
+        = df_split.churn_prediction(logit, train_x, test_x, train_y, test_y, cols, "coefficients")
+
+
 
 
 
