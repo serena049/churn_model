@@ -170,7 +170,6 @@ class Transformation:
         df.set_index('customerid', inplace=True)
         df_cat = df.select_dtypes(include='object')
         df_num = df[list(set(df.columns) - set(df_cat.columns))]
-        target = df[target_col]
 
         # one-hot encoding for categorical
         df_new_cat = pd.get_dummies(df_cat.drop(target_col, 1))
@@ -183,7 +182,8 @@ class Transformation:
 
         # label encode target variable
         le = LabelEncoder()
-        target = le.fit_transform(target)
+        df[target_col] = le.fit_transform(df[target_col])
+        target = df[target_col]
         # concat numerical cols and new cat cols
         df_encode = pd.concat([target, scaled, df_new_cat], axis=1)
 
