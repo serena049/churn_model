@@ -201,4 +201,3 @@ if __name__ == "__main__":
     df_rv_na = df_transformation.remove_missing_value()
     df_encode = df_transformation.preprocess(df_rv_na)
     print(df_encode)
-    print(target)

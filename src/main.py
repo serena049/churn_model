@@ -1,4 +1,5 @@
 import preprocess.etl as etl
+import model.fitmodel as fitmodel
 import pathlib as pl
 
 if __name__ == "__main__":
@@ -16,5 +17,12 @@ if __name__ == "__main__":
     df_transformation = etl.Transformation(df_raw)
     df_rv_na = df_transformation.remove_missing_value()
     df_encode = df_transformation.preprocess(df_rv_na)
+
+    # Step 2: Fit models
+    # train test split
+    df_split = fitmodel.AsNumpy(df_encode)
+    train_X, train_Y, test_X, test_Y = df_split.train_test_split()
+
+
 
 
