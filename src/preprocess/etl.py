@@ -6,6 +6,8 @@ import time
 import numpy as np
 import yaml
 from sklearn.preprocessing import StandardScaler
+from sklearn.preprocessing import LabelEncoder
+
 
 __author__ = "Wei (Serena) Zou"
 __copyright__ = "Wei (Serena) Zou"
@@ -179,6 +181,9 @@ class Transformation:
         scaled = pd.DataFrame(scaled, columns=df_num.columns)
         scaled.set_index(df.index, inplace=True)
 
+        # label encode target variable
+        le = LabelEncoder()
+        target = le.fit_transform(target)
         # concat numerical cols and new cat cols
         df_encode = pd.concat([target, scaled, df_new_cat], axis=1)
 
