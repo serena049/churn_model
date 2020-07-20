@@ -4,9 +4,10 @@ import pytest
 
 # from data.preprocessing_helpers import DataProcess
 
-class TestLoadData():
+class TestTransformation():
 
-    def test_path_exist(self):
+    @pytest.fixture
+    def raw_and_clean_data_file(self):
         pass
 
     def test_data_size(self):
