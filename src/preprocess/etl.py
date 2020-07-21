@@ -158,6 +158,11 @@ class Transformation:
         self.df = df
 
     def remove_missing_value(self, col_na_thres: str = 0.2) -> pd.DataFrame:
+        """
+        This function is used to remove NAs
+        :param col_na_thres: if % of NAs > this threshold, the column will be removed
+        :return: df without NAs
+        """
         # remove columns with > col_na_thres na
         df_no_na_col = self.df.dropna(thresh=col_na_thres * len(self.df), axis=1)
         # remove rows with any na
@@ -167,6 +172,12 @@ class Transformation:
 
     @staticmethod
     def preprocess(df, target_col: str = 'churn'):
+        """
+        This function is used to preprocess the raw data and make it ready for model fitting.
+        :param df: raw data
+        :param target_col: target col name
+        :return: post-processed df
+        """
         df.set_index('customerid', inplace=True)
         df_cat = df.select_dtypes(include='object')
         df_num = df[list(set(df.columns) - set(df_cat.columns))]
