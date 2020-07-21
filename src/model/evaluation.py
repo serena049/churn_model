@@ -13,12 +13,6 @@ class AsNumpy:
         self.df = df
 
     def train_test_split(self, target_col: str = 'churn', id_col: str = 'customerid'):
-        """
-        This function will split the df into train and test data for model fitting and evalution
-        :param target_col: target col name
-        :param id_col: id col name
-        :return: np.arrays for train_x, train_y, test_x, test_y and list of col names of the data used in modeling
-        """
 
         # splitting train and test data
         train, test = train_test_split(self.df, test_size=1/4, random_state=42)
@@ -35,18 +29,6 @@ class AsNumpy:
 
     @staticmethod
     def churn_prediction(algorithm, training_x, testing_x, training_y, testing_y, cols: list, feature_imp: str):
-        """
-        This function uses the selected algorithm to fit the model
-        :param algorithm: selected algorithm
-        :param training_x: np.array of training x
-        :param testing_x: np.array of testing x
-        :param training_y: np.array of training y
-        :param testing_y: np.array oftesting y
-        :param cols: list of cols of the df used for model fitting
-        :param feature_imp: str indicating the feature importance variable (coeff. for logistic regression; feature
-        importance scores for tree-based models)
-        :return: a set of model evaluation metrics
-        """
 
         # model
         global fi_scores
