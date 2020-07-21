@@ -68,24 +68,25 @@ if __name__ == "__main__":
 
     # specify output file paths
     output_data_path = pl.Path(__file__).resolve().parents[1].joinpath('data/output/')
-    print(output_data_path)
     writer_evl = pd.ExcelWriter(output_data_path.joinpath('model_evaluation.xlsx'), engine='xlsxwriter')
     writer_fi = pd.ExcelWriter(output_data_path.joinpath('model_fi.xlsx'), engine='xlsxwriter')
 
     # run the models and output results
-
     for algorithm_name, algorithm, feature_imp_col in zip(list_algorithm_names, list_algorithms, list_feature_imp_cols):
 
         # instantiate class object
         model = fitmodel.Model(train_x, train_y, test_x, test_y, test_y, cols, algorithm, feature_imp_col)
         # fit model
-        model_fit, predictions = model.churn_prediction()
+        model_fit, predictions, probabilities = model.churn_prediction()
         # calculate feature importance
         feature_importance = model.feature_importance(model_fit)
         feature_importance.to_excel(writer_fi, sheet_name=algorithm_name)
         # evaluate model performance
-        evl = pd.DataFrame([model.evaluation(predictions)])
-        evl.to_excel(writer_evl, sheet_name=algorithm_name)
+        evl, fpr, tpr, auc = model.evaluation(predictions, probabilities)
+        pd.DataFrame([evl]).to_excel(writer_evl, sheet_name=algorithm_name)
+        # ROC curve
+        plt_path = output_data_path.joinpath(algorithm_name + '.png')
+        model.roc_curve(fpr, tpr, auc, plt_path, algorithm_name)
 
     writer_evl.save()
     writer_fi.save()

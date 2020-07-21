@@ -2,12 +2,13 @@ from sklearn.model_selection import train_test_split
 import pandas as pd
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import confusion_matrix, accuracy_score, classification_report
-from sklearn.metrics import roc_auc_score
 from sklearn.naive_bayes import GaussianNB
 from sklearn.svm import SVC
 from sklearn.ensemble import GradientBoostingClassifier
 from sklearn.ensemble import RandomForestClassifier
 import pathlib as pl
+from sklearn.metrics import roc_auc_score, roc_curve
+import matplotlib.pyplot as plt
 import numpy as np
 
 
@@ -52,10 +53,10 @@ class Model:
         """
         This function uses the selected algorithm to fit the model
         :param algorithm: selected algorithm
-        :param training_x: np.array of training x
-        :param testing_x: np.array of testing x
-        :param training_y: np.array of training y
-        :param testing_y: np.array oftesting y
+        :param train_x: np.array of training x
+        :param test_x: np.array of testing x
+        :param train_y: np.array of training y
+        :param test_y: np.array oftesting y
         :param cols: list of cols of the df used for model fitting
         :param feature_imp: str indicating the feature importance variable (coeff. for logistic regression; feature
         importance scores for tree-based models)
@@ -65,19 +66,19 @@ class Model:
         # train model
         model = self.algorithm.fit(self.train_x, self.train_y)
         predictions = model.predict(self.test_x)
-        return model, predictions
+        probabilities = model.predict_proba(self.test_x)
+        return model, predictions, probabilities
 
-    def prediction(self, model, top_n: int = 30):
-        probabilities = model.predict_proba(self.test_x).sort_values(ascending=False)
-        return probabilities
+    def evaluation(self, predictions, probabilities):
+        fpr, tpr, thresholds = roc_curve(self.test_y, probabilities[:, 1])
+        auc = roc_auc_score(self.test_y, predictions)
 
-    def evaluation(self, predictions):
         evl = {}
         evl["accuracy"] = accuracy_score(self.test_y, predictions)
         evl["classification report"] = classification_report(self.test_y, predictions)
         evl["confusion materix"] = confusion_matrix(self.test_y, predictions)
-        evl["auc"] = roc_auc_score(self.test_y, predictions)
-        return evl
+
+        return evl, fpr, tpr, auc
 
     def feature_importance(self, model):
         # feature_imp: for logistic regression, it is model coefficients, for tree-based models, it is feature
@@ -94,6 +95,28 @@ class Model:
         fi_imp_sumry = fi_imp_sumry.sort_values(by="fi_scores", ascending=False)
 
         return fi_imp_sumry
+
+    @staticmethod
+    def roc_curve(fpr, tpr, auc, plt_path, algorithm_name):
+
+        plt.figure(figsize=(12, 16))
+        plt.plot(fpr, tpr, linestyle="dotted",
+                 color="royalblue", linewidth=2,
+                 label="AUC = " + str(np.around(auc, 3)))
+        plt.plot([0, 1], [0, 1], linestyle="dashed",
+                 color="orangered", linewidth=1.5)
+        plt.fill_between(fpr, tpr, alpha=.4)
+        plt.fill_between([0, 1], [0, 1], color="k")
+        plt.legend(loc="lower right",
+                   prop={"size": 12})
+        plt.grid(True, alpha=.15)
+        plt.title(algorithm_name, color="b")
+        plt.xticks(np.arange(0, 1, .3))
+        plt.yticks(np.arange(0, 1, .3))
+        plt.savefig(plt_path)
+
+        return
+
 
 
 if __name__ == '__main__':
@@ -138,20 +161,24 @@ if __name__ == '__main__':
     list_algorithm_names = ['logit', 'gbtree']
 
     output_data_path = pl.Path(__file__).resolve().parents[1].joinpath('data/output/')
-    writer_evl = pd.ExcelWriter('model_evaluation.xlsx', engine='xlsxwriter')
-    writer_fi = pd.ExcelWriter('model_evaluation.xlsx', engine='xlsxwriter')
+    writer_evl = pd.ExcelWriter(output_data_path.joinpath('model_evaluation.xlsx'), engine='xlsxwriter')
+    writer_fi = pd.ExcelWriter(output_data_path.joinpath('model_fi.xlsx'), engine='xlsxwriter')
 
     for algorithm_name, algorithm, feature_imp_col in zip(list_algorithm_names, list_algorithms, list_feature_imp_cols):
         # instantiate class object
         model = Model(train_x, train_y, test_x, test_y, test_y, cols, algorithm, feature_imp_col)
         # fit model
-        model_fit, predictions = model.churn_prediction()
+        model, predictions, probabilities = model.churn_prediction()
         # calculate feature importance
         feature_importance = model.feature_importance(model_fit)
         feature_importance.to_excel(writer_fi, sheet_name=algorithm_name)
         # evaluate model performance
-        evl = pd.DataFrame([model.evaluation(predictions)])
-        evl.to_excel(writer_evl, sheet_name=algorithm_name)
+        evl, fpr, tpr, auc = pd.DataFrame([model.evaluation(predictions)])
+        pd.DataFrame([evl]).to_excel(writer_evl, sheet_name=algorithm_name)
+        # ROC curve
+        plt_path = output_data_path.joinpath(algorithm_name+'.png')
+        roc_curve(fpr, tpr, auc, plt_path, algorithm_name)
+
 
     writer_evl.save()
     writer_fi.save()
