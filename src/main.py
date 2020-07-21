@@ -64,30 +64,34 @@ if __name__ == "__main__":
     # fit and compare models
     list_algorithm_names = ['logit', 'gbtree']
     list_algorithms = [logit, gbtree]
-    list_feature_imp = ["coefficients", "features"]
+    list_feature_imp_cols = ["coefficients", "features"]
+
+    # specify output file paths
+    output_data_path = pl.Path(__file__).resolve().parents[1].joinpath('data/output/')
+    print(output_data_path)
+    writer_evl = pd.ExcelWriter(output_data_path.joinpath('model_evaluation.xlsx'), engine='xlsxwriter')
+    writer_fi = pd.ExcelWriter(output_data_path.joinpath('model_fi.xlsx'), engine='xlsxwriter')
 
     # run the models and output results
-    output_data_path = pl.Path(__file__).resolve().parents[1].joinpath('data/output/')
-    with pd.ExcelWriter(output_data_path.joinpath(file_name)) as writer:
-        for algorithm_name, algorithm, feature_imp in zip(list_algorithm_names, list_algorithms, list_feature_imp):
 
-            # instantiate class object
-            model = fitmodel.Model(train_x, train_y, test_x, test_y, cols, algorithm, feature_imp)
-            # fit model
-            model_fit, predictions = model.churn_prediction()
-            # calculate feature importance
-            fi_imp_sumry = model.feature_importance(model_fit)
-            # evaluate model performance
-            evl = model.evaluation(predictions)
+    for algorithm_name, algorithm, feature_imp_col in zip(list_algorithm_names, list_algorithms, list_feature_imp_cols):
 
-            # save model performance and feature importance data to output
-            fi_imp_sumry.to_excel(writer,  'feature_importance.xlsx', output_data_path, str(algorithm_name))
+        # instantiate class object
+        model = fitmodel.Model(train_x, train_y, test_x, test_y, test_y, cols, algorithm, feature_imp_col)
+        # fit model
+        model_fit, predictions = model.churn_prediction()
+        # calculate feature importance
+        feature_importance = model.feature_importance(model_fit)
+        feature_importance.to_excel(writer_fi, sheet_name=algorithm_name)
+        # evaluate model performance
+        evl = pd.DataFrame([model.evaluation(predictions)])
+        evl.to_excel(writer_evl, sheet_name=algorithm_name)
 
+    writer_evl.save()
+    writer_fi.save()
 
-
-
-            df.to_excel(writer, sheet_name=sheet_name)
-        #model.to_excel(pd.DataFrame(evl), 'model_evaluation.xlsx', output_data_path, str(algorithm_name))
+    writer_fi.close()
+    writer_evl.close()
 
 
 

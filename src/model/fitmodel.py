@@ -38,14 +38,15 @@ class AsNumpy:
 
 
 class Model:
-    def __init__(self, train_x, train_y, test_x, test_y, prediction_x, cols, algorithm, feature_imp):
+    def __init__(self, train_x, train_y, test_x, test_y, prediction_x, cols, algorithm, feature_imp_col):
         self.train_x = train_x
         self.train_y = train_y
         self.test_x = test_x
         self.test_y = test_y
         self.cols = cols
         self.algorithm = algorithm
-        self.feature_imp = feature_imp
+        self.feature_imp_col = feature_imp_col
+        self.prediction_x = prediction_x
 
     def churn_prediction(self):
         """
@@ -81,9 +82,9 @@ class Model:
     def feature_importance(self, model):
         # feature_imp: for logistic regression, it is model coefficients, for tree-based models, it is feature
         # importance
-        if self.feature_imp == "coefficients":
+        if self.feature_imp_col == "coefficients":
             scores = pd.DataFrame(model.coef_.ravel())
-        elif self.feature_imp == "features":
+        elif self.feature_imp_col == "features":
             scores = pd.DataFrame(model.feature_importances_)
 
         # generate feature importance df
@@ -93,12 +94,6 @@ class Model:
         fi_imp_sumry = fi_imp_sumry.sort_values(by="fi_scores", ascending=False)
 
         return fi_imp_sumry
-
-    @staticmethod
-    def to_excel(df, file_name, file_path, sheet_name):
-        with pd.ExcelWriter(file_path.joinpath(file_name)) as writer:
-            df.to_excel(writer, sheet_name=sheet_name)
-        return
 
 
 if __name__ == '__main__':
@@ -139,22 +134,33 @@ if __name__ == '__main__':
 
     # fit and compare models
     list_algorithms = [logit, gbtree]
-    list_feature_imp = ["coefficients", "features"]
+    list_feature_imp_cols = ["coefficients", "features"]
     list_algorithm_names = ['logit', 'gbtree']
 
-    all_evl = np.array()
-    all_feature_importance = np.array()
+    output_data_path = pl.Path(__file__).resolve().parents[1].joinpath('data/output/')
+    writer_evl = pd.ExcelWriter('model_evaluation.xlsx', engine='xlsxwriter')
+    writer_fi = pd.ExcelWriter('model_evaluation.xlsx', engine='xlsxwriter')
 
-    for algorithm_name, algorithm, feature_imp in zip(list_algorithm_names, list_algorithms, list_feature_imp):
+    for algorithm_name, algorithm, feature_imp_col in zip(list_algorithm_names, list_algorithms, list_feature_imp_cols):
         # instantiate class object
-        model = Model(train_x, train_y, test_x, test_y, cols, algorithm, feature_imp)
+        model = Model(train_x, train_y, test_x, test_y, test_y, cols, algorithm, feature_imp_col)
         # fit model
         model_fit, predictions = model.churn_prediction()
         # calculate feature importance
-        fi_imp_sumry = model.feature_importance(model_fit)
+        feature_importance = model.feature_importance(model_fit)
+        feature_importance.to_excel(writer_fi, sheet_name=algorithm_name)
         # evaluate model performance
-        evl = model.evaluation(predictions)
-        # save model performance and feature importances
-        output_data_path = pl.Path(__file__).resolve().parents[2].joinpath('data/output/')
-        model.to_excel(fi_imp_sumry, 'feature_importance.xlsx', output_data_path, str(algorithm))
-        model.to_excel(evl, 'model_evaluation.xlsx', output_data_path, str(algorithm))
+        evl = pd.DataFrame([model.evaluation(predictions)])
+        evl.to_excel(writer_evl, sheet_name=algorithm_name)
+
+    writer_evl.save()
+    writer_fi.save()
+
+
+
+
+
+
+
+
+
