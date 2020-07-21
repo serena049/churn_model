@@ -204,7 +204,8 @@ class Transformation:
 
 if __name__ == "__main__":
     # load
-    input_data_path = pl.Path(__file__).resolve().parents[2].joinpath('data/input/') # the parent directory of current script
+    input_data_path = pl.Path(__file__).resolve().parents[2].joinpath('data/input/')  # the parent directory of
+    # current script
     check_data = Check(input_data_path)
     df_all_files = check_data.list_all_files()
     check_data.check_path(df_all_files)
