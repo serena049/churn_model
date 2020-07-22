@@ -64,9 +64,9 @@ if __name__ == "__main__":
                                         validation_fraction=0.1, n_iter_no_change=None, tol=0.0001, ccp_alpha=0.0)
 
     # fit and compare models
-    list_algorithm_names = ['logit', 'gbtree']
-    list_algorithms = [logit, gbtree]
-    list_feature_imp_cols = ["coefficients", "features"]
+    list_algorithm_names = ['logit', 'gbtree', 'rf']
+    list_algorithms = [logit, gbtree, randomforest]
+    list_feature_imp_cols = ["coefficients", "features", "features"]
 
     # specify output file paths
     output_data_path = pl.Path(__file__).resolve().parents[1].joinpath('data/output/')
