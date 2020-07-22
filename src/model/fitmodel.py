@@ -67,6 +67,7 @@ class Model:
         model = self.algorithm.fit(self.train_x, self.train_y)
         predictions = model.predict(self.test_x)
         probabilities = model.predict_proba(self.test_x)
+        print("model fitting done!")
         return model, predictions, probabilities
 
     def evaluation(self, predictions, probabilities):
@@ -77,7 +78,7 @@ class Model:
         evl["accuracy"] = accuracy_score(self.test_y, predictions)
         evl["classification report"] = classification_report(self.test_y, predictions)
         evl["confusion materix"] = confusion_matrix(self.test_y, predictions)
-
+        print("evalution done!")
         return evl, fpr, tpr, auc
 
     def feature_importance(self, model):
@@ -93,7 +94,7 @@ class Model:
         fi_imp_sumry = (pd.merge(scores, column_df, left_index=True, right_index=True, how="left"))
         fi_imp_sumry.columns = ["fi_scores", "features"]
         fi_imp_sumry = fi_imp_sumry.sort_values(by="fi_scores", ascending=False)
-
+        print("feature importance done!")
         return fi_imp_sumry
 
     @staticmethod

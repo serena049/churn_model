@@ -1,5 +1,7 @@
 import preprocess.etl as etl
 import model.fitmodel as fitmodel
+import forecast.prediction as prediction
+
 import pathlib as pl
 import pandas as pd
 from sklearn.linear_model import LogisticRegression
@@ -15,7 +17,7 @@ if __name__ == "__main__":
     check_data = etl.Check(input_data_path)
     df_all_files = check_data.list_all_files()
     check_data.check_path(df_all_files)
-    df_raw = check_data.convert(df_all_files)
+    check_data.convert(df_all_files)
     df_raw = check_data.load(df_all_files)
     check_data.check_size(df_raw)
 
@@ -72,12 +74,15 @@ if __name__ == "__main__":
     writer_fi = pd.ExcelWriter(output_data_path.joinpath('model_fi.xlsx'), engine='xlsxwriter')
 
     # run the models and output results
+    models = {}
     for algorithm_name, algorithm, feature_imp_col in zip(list_algorithm_names, list_algorithms, list_feature_imp_cols):
 
         # instantiate class object
         model = fitmodel.Model(train_x, train_y, test_x, test_y, test_y, cols, algorithm, feature_imp_col)
+
         # fit model
         model_fit, predictions, probabilities = model.churn_prediction()
+        models[algorithm_name] = model_fit
         # calculate feature importance
         feature_importance = model.feature_importance(model_fit)
         feature_importance.to_excel(writer_fi, sheet_name=algorithm_name)
@@ -93,6 +98,31 @@ if __name__ == "__main__":
 
     writer_fi.close()
     writer_evl.close()
+
+    # Step 3: Forecast and output priority list
+    # preprocessing
+
+    check_data.convert(df_all_files, contains_str="prediction")
+    df_fcst_raw = check_data.load(df_all_files, contains_str="prediction", yml_file="type_fcst.yml")
+
+    check_data.check_size(df_fcst_raw, n_cols=20)
+
+    # transformation
+    df_fcst_transformation = etl.Transformation(df_fcst_raw)
+    df_fcst_rv_na = df_fcst_transformation.remove_missing_value()
+    df_fcst_encode = df_fcst_transformation.preprocess(df_fcst_rv_na)
+
+    selected_model = models['gbtree']
+
+    model_fcst = prediction.Forecast(df_fcst_encode, selected_model)
+    fcst_result = model_fcst.forecast()
+
+    fcst_result.to_csv(output_data_path.joinpath('forecast_result.csv'))
+
+
+
+
+
 
 
 

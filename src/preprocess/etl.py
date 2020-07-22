@@ -52,9 +52,8 @@ class Check:
             raise ValueError("empty folder!")
 
     @staticmethod
-    def convert(df:pd.DataFrame, file_col_name: str = "File_Name", time_col_name: str = "Created",
+    def convert(df: pd.DataFrame, file_col_name: str = "File_Name", time_col_name: str = "Created",
              parent_path_col_name: str = "Parent", contains_str: str = "datasets"):
-
         '''
         This function is used to load the raw csv file, trim whitespaces in numerical columns, and output the file
         to the original folder
@@ -68,11 +67,11 @@ class Check:
         '''
 
         # select all the files containing name "datasets"
-        files = df[df[file_col_name].str.contains(contains_str, na=False)]
-        if len(files.index) >= 1:
-            # select the most recent data
-            file_path = files.sort_values(time_col_name, ascending=False)[parent_path_col_name][0].joinpath(
-                files.sort_values(time_col_name, ascending=False)[file_col_name][0])
+        files = df[df[file_col_name].str.contains(contains_str, na=False)].reset_index(drop=True)
+
+        # select the most recent data
+        file_path = files.sort_values(time_col_name, ascending=False)[parent_path_col_name][0].joinpath(
+            files.sort_values(time_col_name, ascending=False)[file_col_name][0])
 
         # read in raw data
         df = pd.read_csv(file_path)
@@ -91,12 +90,14 @@ class Check:
         df[col_with_ws] = df[col_with_ws].replace(r'^\s*$', np.nan, regex=True)
 
         df.to_csv(file_path, index=False)
+        print("data conversion done!")
 
         return
 
     @staticmethod
     def load(df: pd.DataFrame, file_col_name: str = "File_Name", time_col_name: str = "Created",
-             parent_path_col_name: str = "Parent", contains_str: str = "datasets", name_in_reference: str = 'churn'):
+             parent_path_col_name: str = "Parent", contains_str: str = "datasets", yml_file: str = 'type.yml',
+             name_in_reference: str = 'churn'):
 
         """
         Find the most recent data file and load the data
@@ -111,14 +112,14 @@ class Check:
         """
 
         # select all the files containing name "datasets"
-        files = df[df[file_col_name].str.contains(contains_str, na=False)]
+        files = df[df[file_col_name].str.contains(contains_str, na=False)].reset_index()
         if len(files.index) >= 1:
             # select the most recent data
             file_path = files.sort_values(time_col_name, ascending=False)[parent_path_col_name][0].joinpath(
-                        files.sort_values(time_col_name, ascending=False)[file_col_name][0])
+                files.sort_values(time_col_name, ascending=False)[file_col_name][0])
 
             # import type.yml to specify column types
-            yml_file = pl.Path(__file__).resolve().parents[0].joinpath('type.yml')
+            yml_file = pl.Path(__file__).resolve().parents[0].joinpath(yml_file)
             with open(yml_file) as f:
                 # use safe_load instead load
                 type_dic = yaml.safe_load(f)
@@ -183,7 +184,10 @@ class Transformation:
         df_num = df[list(set(df.columns) - set(df_cat.columns))]
 
         # one-hot encoding for categorical
-        df_new_cat = pd.get_dummies(df_cat.drop(target_col, 1))
+        if target_col in df_cat.columns:
+            df_new_cat = pd.get_dummies(df_cat.drop(target_col, 1))
+        else:
+            df_new_cat = pd.get_dummies(df_cat)
 
         # standardize numerical
         std = StandardScaler()
@@ -192,11 +196,14 @@ class Transformation:
         scaled.set_index(df.index, inplace=True)
 
         # label encode target variable
-        le = LabelEncoder()
-        df[target_col] = le.fit_transform(df[target_col])
-        target = df[target_col]
-        # concat numerical cols and new cat cols
-        df_encode = pd.concat([target, scaled, df_new_cat], axis=1)
+        if target_col in df_cat.columns:
+            le = LabelEncoder()
+            df[target_col] = le.fit_transform(df[target_col])
+            target = df[target_col]
+            # concat numerical cols and new cat cols
+            df_encode = pd.concat([target, scaled, df_new_cat], axis=1)
+        else:
+            df_encode = pd.concat([scaled, df_new_cat], axis=1)
 
         print("data ready for modeling!")
         return df_encode
