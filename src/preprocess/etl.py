@@ -14,7 +14,7 @@ __copyright__ = "Wei (Serena) Zou"
 __license__ = "mit"
 
 
-class Check:
+class CheckRawInputs:
     """
     Class to check path, data size and data type
     """
@@ -147,6 +147,8 @@ class Check:
         """
         if (len(data.index) > 0) and (len(data.columns) == n_cols):
             print("data size correct.")
+        elif len(data.index) == 0:
+            raise ValueError("empty data!")
         else:
             raise ValueError("data size wrong!")
 

@@ -12,12 +12,20 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 
-class Forecast:
-    def __init__(self, df_fcst, model):
+class Forecaster:
+    def __init__(self, df_fcst: pd.DataFrame, model):
+        """
+        :param df_fcst: this is the encoded input df for forecast
+        :param model: selected fitted model
+        """
         self.df_fcst = df_fcst
         self.model = model
 
     def forecast(self):
+        """
+        This function takes in the fitted model and input data and return forecast results
+        :return: fcst df
+        """
         x_forecast = self.df_fcst.values
         id = self.df_fcst.index
         fcst = pd.DataFrame(self.model.predict_proba(x_forecast), index=id)
