@@ -31,13 +31,13 @@ if __name__ == "__main__":
     df_split = fitmodel.NumpyWrapper(df_encode)
     train_x, train_y, test_x, test_y, cols = df_split.train_test_split()
 
-    # run a logistic regression model
+    # define a logistic regression model
     logit = LogisticRegression(C=1.0, class_weight=None, dual=False, fit_intercept=True,
                                intercept_scaling=1, max_iter=100, multi_class='ovr', n_jobs=1,
                                penalty='l2', random_state=None, solver='liblinear', tol=0.0001,
                                verbose=0, warm_start=False)
 
-    # run a random forest model
+    # define a random forest model
     randomforest = RandomForestClassifier(bootstrap=True, class_weight=None, criterion='entropy',
                                           max_depth=3, max_features='auto', max_leaf_nodes=None,
                                           min_impurity_decrease=0.0, min_impurity_split=None,
@@ -46,7 +46,7 @@ if __name__ == "__main__":
                                           oob_score=False, random_state=None, verbose=0,
                                           warm_start=False)
 
-    # gaussian NB
+    # define a gaussian NB
     gnb = GaussianNB(priors=None)
 
     # SVM
@@ -55,7 +55,7 @@ if __name__ == "__main__":
                   max_iter=-1, probability=True, random_state=None, shrinking=True,
                   tol=0.001, verbose=False)
 
-    # Graident boosting
+    # define a Graident boosting
     gbtree = GradientBoostingClassifier(loss='deviance', learning_rate=0.1, n_estimators=100, subsample=1.0,
                                         criterion='friedman_mse', min_samples_split=2, min_samples_leaf=1,
                                         min_weight_fraction_leaf=0.0, max_depth=3, min_impurity_decrease=0.0,
@@ -63,7 +63,7 @@ if __name__ == "__main__":
                                         verbose=0, max_leaf_nodes=None, warm_start=False, presort='deprecated',
                                         validation_fraction=0.1, n_iter_no_change=None, tol=0.0001, ccp_alpha=0.0)
 
-    # fit and compare models
+    # define a fit and compare models
     list_algorithm_names = ['logit', 'gbtree', 'rf']
     list_algorithms = [logit, gbtree, randomforest]
     list_feature_imp_cols = ["coefficients", "features", "features"]
@@ -73,7 +73,7 @@ if __name__ == "__main__":
     writer_evl = pd.ExcelWriter(output_data_path.joinpath('model_evaluation.xlsx'), engine='xlsxwriter')
     writer_fi = pd.ExcelWriter(output_data_path.joinpath('model_fi.xlsx'), engine='xlsxwriter')
 
-    # run the models and output results
+    # fit the models and output results
     models = {}
     for algorithm_name, algorithm, feature_imp_col in zip(list_algorithm_names, list_algorithms, list_feature_imp_cols):
 

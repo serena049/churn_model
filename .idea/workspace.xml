@@ -20,13 +20,7 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="17c810bf-211f-4d0a-a46e-315fd589c369" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/.idea/codestream.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/churn_model.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/churn_model.iml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/forecast/prediction.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/forecast/prediction.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/main.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/model/fitmodel.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/model/fitmodel.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/preprocess/etl.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/preprocess/etl.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
