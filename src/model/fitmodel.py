@@ -119,18 +119,14 @@ class Model:
         return
 
 
-
-if __name__ == '__main__':
-    df_split = AsNumpy(df_encode)
-    train_x, train_y, test_x, test_y, cols = df_split.train_test_split()
-
-    # run a logistic regression model
+class FitModel:
+    # define a logistic regression model
     logit = LogisticRegression(C=1.0, class_weight=None, dual=False, fit_intercept=True,
                                intercept_scaling=1, max_iter=100, multi_class='ovr', n_jobs=1,
                                penalty='l2', random_state=None, solver='liblinear', tol=0.0001,
                                verbose=0, warm_start=False)
 
-    # run a random forest model
+    # define a random forest model
     randomforest = RandomForestClassifier(bootstrap=True, class_weight=None, criterion='entropy',
                                           max_depth=3, max_features='auto', max_leaf_nodes=None,
                                           min_impurity_decrease=0.0, min_impurity_split=None,
@@ -139,7 +135,7 @@ if __name__ == '__main__':
                                           oob_score=False, random_state=None, verbose=0,
                                           warm_start=False)
 
-    # gaussian NB
+    # define a gaussian NB
     gnb = GaussianNB(priors=None)
 
     # SVM
@@ -148,7 +144,7 @@ if __name__ == '__main__':
                   max_iter=-1, probability=True, random_state=None, shrinking=True,
                   tol=0.001, verbose=False)
 
-    # Graident boosting
+    # define a Graident boosting
     gbtree = GradientBoostingClassifier(loss='deviance', learning_rate=0.1, n_estimators=100, subsample=1.0,
                                         criterion='friedman_mse', min_samples_split=2, min_samples_leaf=1,
                                         min_weight_fraction_leaf=0.0, max_depth=3, min_impurity_decrease=0.0,
@@ -156,39 +152,64 @@ if __name__ == '__main__':
                                         verbose=0, max_leaf_nodes=None, warm_start=False, presort='deprecated',
                                         validation_fraction=0.1, n_iter_no_change=None, tol=0.0001, ccp_alpha=0.0)
 
-    # fit and compare models
-    list_algorithms = [logit, gbtree]
-    list_feature_imp_cols = ["coefficients", "features"]
-    list_algorithm_names = ['logit', 'gbtree']
+    list_of_models_names = ['logit', 'gbtree', 'rf', 'gnb', 'svc_lin']
+    list_algorithms = [logit, gbtree, randomforest, gnb, svc_lin]
+    list_feature_imp_cols = ["coefficients"] + ["features"] * 4
 
-    output_data_path = pl.Path(__file__).resolve().parents[1].joinpath('data/output/')
-    writer_evl = pd.ExcelWriter(output_data_path.joinpath('model_evaluation.xlsx'), engine='xlsxwriter')
-    writer_fi = pd.ExcelWriter(output_data_path.joinpath('model_fi.xlsx'), engine='xlsxwriter')
+    all_models = zip(list_of_models_names, list_algorithms, list_feature_imp_cols)
 
-    for algorithm_name, algorithm, feature_imp_col in zip(list_algorithm_names, list_algorithms, list_feature_imp_cols):
-        # instantiate class object
-        model = Model(train_x, train_y, test_x, test_y, test_y, cols, algorithm, feature_imp_col)
-        # fit model
-        model, predictions, probabilities = model.churn_prediction()
-        # calculate feature importance
-        feature_importance = model.feature_importance(model_fit)
-        feature_importance.to_excel(writer_fi, sheet_name=algorithm_name)
-        # evaluate model performance
-        evl, fpr, tpr, auc = pd.DataFrame([model.evaluation(predictions)])
-        pd.DataFrame([evl]).to_excel(writer_evl, sheet_name=algorithm_name)
-        # ROC curve
-        plt_path = output_data_path.joinpath(algorithm_name+'.png')
-        roc_curve(fpr, tpr, auc, plt_path, algorithm_name)
+    def __init__(self, all_models, df_encode: pd.DataFrame, list_of_models: list = None, data_path_parent_level:
+    int = 1):
+        """
+
+        :type df_encode: object
+        """
+        if list_of_models is None:
+            list_of_models = ['logit', 'gbtree', 'rf', 'gnb', 'svc_lin']
+        # select the models user want to test
+        self.selected_models = [item for item in all_models if item[0] in list_of_models]
+        self.df_encode = df_encode
+        self.data_path_parent_level = data_path_parent_level
+
+    def train_models(self):
+        # train test split
+        df_split = NumpyWrapper(self.df_encode)
+        train_x, train_y, test_x, test_y, cols = df_split.train_test_split()
+
+        # specify output file paths
+        output_data_path = pl.Path(__file__).resolve().parents[self.data_path_parent_level].joinpath('data/output/')
+        writer_evl = pd.ExcelWriter(output_data_path.joinpath('model_evaluation.xlsx'), engine='xlsxwriter')
+        writer_fi = pd.ExcelWriter(output_data_path.joinpath('model_fi.xlsx'), engine='xlsxwriter')
+
+        # fit the models and output results
+        models = {}
+        for algorithm_name, algorithm, feature_imp_col in self.selected_models:
+            # instantiate class object
+            model = Model(train_x, train_y, test_x, test_y, test_y, cols, algorithm, feature_imp_col)
+
+            # fit model
+            model_fit, predictions, probabilities = model.churn_prediction()
+            models[algorithm_name] = model_fit
+            # calculate feature importance
+            feature_importance = model.feature_importance(model_fit)
+            feature_importance.to_excel(writer_fi, sheet_name=algorithm_name)
+            # evaluate model performance
+            evl, fpr, tpr, auc = model.evaluation(predictions, probabilities)
+            pd.DataFrame([evl]).to_excel(writer_evl, sheet_name=algorithm_name)
+            # ROC curve
+            plt_path = output_data_path.joinpath(algorithm_name + '.png')
+            model.roc_curve(fpr, tpr, auc, plt_path, algorithm_name)
+
+        writer_evl.save()
+        writer_fi.save()
+
+        writer_fi.close()
+        writer_evl.close()
+
+        return
 
 
-    writer_evl.save()
-    writer_fi.save()
-
-
-
-
-
-
-
-
-
+if __name__ == '__main__':
+    list_of_models = ['logit', 'gbtree', 'rf']  # user can modify
+    train_models = FitModel(list_of_models=list_of_models, data_path_parent_level=2)
+    train_models.train_models()

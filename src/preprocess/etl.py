@@ -234,5 +234,5 @@ class DataPreprocess:
 
 
 if __name__ == "__main__":
-    data_preprocess = DataPreprocess()
+    data_preprocess = DataPreprocess(data_path_parent_level=2)
     df_encode = data_preprocess.load_and_encode_data()
