@@ -8,7 +8,6 @@ import yaml
 from sklearn.preprocessing import StandardScaler
 from sklearn.preprocessing import LabelEncoder
 
-
 __author__ = "Wei (Serena) Zou"
 __copyright__ = "Wei (Serena) Zou"
 __license__ = "mit"
@@ -53,7 +52,7 @@ class CheckRawInputs:
 
     @staticmethod
     def convert(df: pd.DataFrame, file_col_name: str = "File_Name", time_col_name: str = "Created",
-             parent_path_col_name: str = "Parent", contains_str: str = "datasets"):
+                parent_path_col_name: str = "Parent", contains_str: str = "datasets"):
         '''
         This function is used to load the raw csv file, trim whitespaces in numerical columns, and output the file
         to the original folder
@@ -157,6 +156,7 @@ class Transformation:
     """
     Class to conduct data transformation for model inputs
     """
+
     def __init__(self, df):
         self.df = df
 
@@ -211,19 +211,28 @@ class Transformation:
         return df_encode
 
 
-if __name__ == "__main__":
-    # load
-    input_data_path = pl.Path(__file__).resolve().parents[2].joinpath('data/input/')  # the parent directory of
-    # current script
-    check_data = Check(input_data_path)
-    df_all_files = check_data.list_all_files()
-    check_data.check_path(df_all_files)
-    df_raw = check_data.convert(df_all_files)
-    df_raw = check_data.load(df_all_files)
-    check_data.check_size(df_raw)
+class DataPreprocess:
+    def __init__(self, data_path_parent_level: int = 1):
+        self.data_path_parent_level = data_path_parent_level
 
-    # transformation
-    df_transformation = Transformation(df_raw)
-    df_rv_na = df_transformation.remove_missing_value()
-    df_encode = df_transformation.preprocess(df_rv_na)
-    print(df_encode)
+    def load_and_encode_data(self):
+        # the parent directory of input data path
+        input_data_path = pl.Path(__file__).resolve().parents[self.data_path_parent_level].joinpath('data/input/')
+        check_data = CheckRawInputs(input_data_path)
+        df_all_files = check_data.list_all_files()
+        check_data.check_path(df_all_files)
+        check_data.convert(df_all_files)
+        df_raw = check_data.load(df_all_files)
+        check_data.check_size(df_raw)
+
+        # encode data
+        df_transformation = Transformation(df_raw)
+        df_rv_na = df_transformation.remove_missing_value()
+        df_encode = df_transformation.preprocess(df_rv_na)
+
+        return df_encode
+
+
+if __name__ == "__main__":
+    data_preprocess = DataPreprocess()
+    df_encode = data_preprocess.load_and_encode_data()
