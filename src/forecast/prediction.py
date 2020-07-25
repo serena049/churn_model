@@ -1,15 +1,5 @@
-from sklearn.model_selection import train_test_split
 import pandas as pd
-from sklearn.linear_model import LogisticRegression
-from sklearn.metrics import confusion_matrix, accuracy_score, classification_report
-from sklearn.naive_bayes import GaussianNB
-from sklearn.svm import SVC
-from sklearn.ensemble import GradientBoostingClassifier
-from sklearn.ensemble import RandomForestClassifier
 import pathlib as pl
-from sklearn.metrics import roc_auc_score, roc_curve
-import matplotlib.pyplot as plt
-import numpy as np
 
 
 class Forecaster:
@@ -33,14 +23,23 @@ class Forecaster:
         return fcst
 
 
+class FcstAndOutputs:
+    def __init__(self, df_fcst_encode: pd.DataFrame, data_path_parent_level: int = 2, selected_model=None):
+        if selected_model is None:
+            raise ValueError("please specify the algorithm used for the forecasts!")
+        self.selected_model = selected_model
+        self.df_fcst_encode = df_fcst_encode
+        self.data_path_parent_level = data_path_parent_level
+
+    def fcst_and_output(self):
+        model_fcst = Forecaster(self.df_fcst_encode, self.selected_model).forecast()
+
+        # specify output file paths
+        output_data_path = pl.Path(__file__).resolve().parents[self.data_path_parent_level].joinpath('data/output/')
+        model_fcst.to_csv(output_data_path.joinpath('forecast_result.csv'))
+
+        return
+
+
 if __name__ == '__main__':
     print("done!")
-
-
-
-
-
-
-
-
-

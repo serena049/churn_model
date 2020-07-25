@@ -144,7 +144,7 @@ class FitModel:
                   max_iter=-1, probability=True, random_state=None, shrinking=True,
                   tol=0.001, verbose=False)
 
-    # define a Graident boosting
+    # define a Gradient boosting
     gbtree = GradientBoostingClassifier(loss='deviance', learning_rate=0.1, n_estimators=100, subsample=1.0,
                                         criterion='friedman_mse', min_samples_split=2, min_samples_leaf=1,
                                         min_weight_fraction_leaf=0.0, max_depth=3, min_impurity_decrease=0.0,
@@ -206,7 +206,7 @@ class FitModel:
         writer_fi.close()
         writer_evl.close()
 
-        return
+        return models
 
 
 if __name__ == '__main__':
