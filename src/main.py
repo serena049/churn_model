@@ -8,7 +8,7 @@ if __name__ == "__main__":
 
     # Step 2: Fit models
     list_of_models = ['logit', 'gbtree', 'rf']     # user can modify
-    train_models = fitmodel.FitModel(list_of_models=list_of_models)
+    train_models = fitmodel.FitModel(df_encode, list_of_models=list_of_models)
     models = train_models.train_models()
 
     # Step 3: Forecast and output priority list

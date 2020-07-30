@@ -158,8 +158,8 @@ class FitModel:
 
     all_models = zip(list_of_models_names, list_algorithms, list_feature_imp_cols)
 
-    def __init__(self, all_models, df_encode: pd.DataFrame, list_of_models: list = None, data_path_parent_level:
-    int = 1):
+    def __init__(self, df_encode: pd.DataFrame, list_of_models: list = None, data_path_parent_level:
+    int = 2):
         """
 
         :type df_encode: object
@@ -167,7 +167,7 @@ class FitModel:
         if list_of_models is None:
             list_of_models = ['logit', 'gbtree', 'rf', 'gnb', 'svc_lin']
         # select the models user want to test
-        self.selected_models = [item for item in all_models if item[0] in list_of_models]
+        self.selected_models = [item for item in FitModel.all_models if item[0] in list_of_models]
         self.df_encode = df_encode
         self.data_path_parent_level = data_path_parent_level
 
