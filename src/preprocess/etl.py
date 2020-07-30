@@ -212,8 +212,10 @@ class Transformation:
 
 
 class DataPreprocess:
-    def __init__(self, data_path_parent_level: int = 2):
+    def __init__(self, contains_str: str = 'dataset', n_cols: int = 21, data_path_parent_level: int = 2):
         self.data_path_parent_level = data_path_parent_level
+        self.contains_str = contains_str
+        self.n_cols = n_cols
 
     def load_and_encode_data(self):
         # the parent directory of input data path
@@ -221,9 +223,9 @@ class DataPreprocess:
         check_data = CheckRawInputs(input_data_path)
         df_all_files = check_data.list_all_files()
         check_data.check_path(df_all_files)
-        check_data.convert(df_all_files)
-        df_raw = check_data.load(df_all_files)
-        check_data.check_size(df_raw)
+        check_data.convert(df_all_files, contains_str=self.contains_str)
+        df_raw = check_data.load(df_all_files, contains_str=self.contains_str)
+        check_data.check_size(df_raw, n_cols=self.n_cols)
 
         # encode data
         df_transformation = Transformation(df_raw)
