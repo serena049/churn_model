@@ -212,7 +212,7 @@ class Transformation:
 
 
 class DataPreprocess:
-    def __init__(self, data_path_parent_level: int = 1):
+    def __init__(self, data_path_parent_level: int = 2):
         self.data_path_parent_level = data_path_parent_level
 
     def load_and_encode_data(self):
