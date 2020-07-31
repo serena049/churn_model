@@ -1,0 +1,13 @@
+# specifies all data sources and how they are loaded into the data layer
+
+data: # example
+  test_data:
+    location:
+    transformers:
+      column_names_to_lower_and_no_spaces: {}
+      clean_column_names: {}
+      to_lower: {}
+      rename_columns: {}
+      map:
+      multiply:
+      add_columns:
