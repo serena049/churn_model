@@ -158,7 +158,7 @@ class FitModel:
 
     all_models = zip(list_of_models_names, list_algorithms, list_feature_imp_cols)
 
-    def __init__(self, df_encode: pd.DataFrame, list_of_models: list = None, data_path_parent_level:
+    def __init__(self, df_encode: pd.DataFrame, list_of_models: list[str] = None, data_path_parent_level:
     int = 2):
         """
 

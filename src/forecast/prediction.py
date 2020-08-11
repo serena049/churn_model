@@ -25,7 +25,7 @@ class Forecaster:
 
 class FcstAndOutputs:
     def __init__(self, df_fcst_encode: pd.DataFrame, data_path_parent_level: int = 2, selected_model=None):
-        if selected_model is None:
+        if not selected_model:
             raise ValueError("please specify the algorithm used for the forecasts!")
         self.selected_model = selected_model
         self.df_fcst_encode = df_fcst_encode

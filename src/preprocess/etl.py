@@ -13,7 +13,7 @@ __copyright__ = "Wei (Serena) Zou"
 __license__ = "mit"
 
 
-class CheckRawInputs:
+class RawInputChecker:
     """
     Class to check path, data size and data type
     """
@@ -213,6 +213,11 @@ class Transformation:
 
 class DataPreprocess:
     def __init__(self, contains_str: str = 'dataset', n_cols: int = 21, data_path_parent_level: int = 2):
+        """
+        :param contains_str: functions will select files containing the user-specified str, default to "dataset"
+        :param n_cols: number of cols the dataset should have
+        :param data_path_parent_level: indicates the parent folder is n (default = 2) levels up than the current script
+        """
         self.data_path_parent_level = data_path_parent_level
         self.contains_str = contains_str
         self.n_cols = n_cols
@@ -220,7 +225,7 @@ class DataPreprocess:
     def load_and_encode_data(self):
         # the parent directory of input data path
         input_data_path = pl.Path(__file__).resolve().parents[self.data_path_parent_level].joinpath('data/input/')
-        check_data = CheckRawInputs(input_data_path)
+        check_data = RawInputChecker(input_data_path)
         df_all_files = check_data.list_all_files()
         check_data.check_path(df_all_files)
         check_data.convert(df_all_files, contains_str=self.contains_str)

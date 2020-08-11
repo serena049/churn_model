@@ -1,0 +1,14 @@
+# specifies how to aggregate and combine the different data sources into datasets
+
+preprocessing:
+  load:
+    # location will be appended to the path defined in the configuration in project -> paths -> data
+    location: data/input/
+    transformers:
+      column_names_to_lower_and_no_spaces: {}
+      clean_column_names: {}
+      to_lower: {}
+      rename_columns: {}
+      map:
+      multiply:
+      add_columns:
