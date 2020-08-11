@@ -165,13 +165,13 @@ class FitModel:
         :type df_encode: object
         """
         if list_of_models is None:
-            list_of_models = ['logit', 'gbtree', 'rf', 'gnb', 'svc_lin']
+            self.list_of_models = ['logit', 'gbtree', 'rf', 'gnb', 'svc_lin']
         # select the models user want to test
-        self.selected_models = [item for item in FitModel.all_models if item[0] in list_of_models]
         self.df_encode = df_encode
         self.data_path_parent_level = data_path_parent_level
 
     def train_models(self):
+
         # train test split
         df_split = NumpyWrapper(self.df_encode)
         train_x, train_y, test_x, test_y, cols = df_split.train_test_split()
@@ -182,8 +182,9 @@ class FitModel:
         writer_fi = pd.ExcelWriter(output_data_path.joinpath('model_fi.xlsx'), engine='xlsxwriter')
 
         # fit the models and output results
+        selected_models = [item for item in FitModel.all_models if item[0] in self.list_of_models]
         models = {}
-        for algorithm_name, algorithm, feature_imp_col in self.selected_models:
+        for algorithm_name, algorithm, feature_imp_col in selected_models:
             # instantiate class object
             model = Model(train_x, train_y, test_x, test_y, test_y, cols, algorithm, feature_imp_col)
 
