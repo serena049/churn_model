@@ -2,10 +2,11 @@
 the preprocess module provides convenience functions for the ETL
 """
 from box import Box
-from pathlib import Path
+import pathlib as pl
 
 
 def read_config(path: str = "config", *paths):
+
     """
     get config as dictionary with attribute access to values which can also be hashed
     :param path: paths to configuration files or directories wich configuration files
@@ -20,6 +21,8 @@ def read_config(path: str = "config", *paths):
             # read the default config from the "config" directory and update it with the user config "my_config.yaml"
             config = read_config("config", "my+config.yaml")
     """
+    # find the config directory
+    path = str(pl.Path(__file__).resolve().parents[2].joinpath(path))
     # expand paths to yaml files
     file_paths = []
     for path in [path] + list(paths):
@@ -28,8 +31,9 @@ def read_config(path: str = "config", *paths):
         else:
             # Glob the given relative pattern in the directory
             # represented by this path, yielding all matching files (of any kind)
-            file_paths.extend(list(Path(path).glob("*.yml")))
-            file_paths.extend(list(Path(path).glob("*.yaml")))
+            file_paths.extend(list(pl.Path(path).glob("*.yml")))
+            file_paths.extend(list(pl.Path(path).glob("*.yaml")))
+
     # read files
     config = Box()
     for path in file_paths:
